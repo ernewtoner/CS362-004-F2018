@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include "rngs.h"
-#include "stdbool.h"
 
 // set NOISY_TEST to 0 to remove printfs from output
 #define NOISY_TEST 0
@@ -33,70 +32,65 @@ int main() {
     struct gameState G;
 
     printf ("TESTING discardCard():\n");
+
+    // TEST CASE 1: Not trashed (add to Played pile)
+    // int discardCard(int handPos, int currentPlayer, struct gameState *state, int trashFlag)
+    // assert playedCards pile has increased in #, pre/post state
+    // assert discarded card is on top of playedCards pile
+    // assert # of playedCards has increased in #
+
+    // assert played handPos is set to -1
+    // assert handCount[currentPlayer] has decreased by 1
+
     
+
+    // TEST CASE 2: Trashed
+    
+    
+
+    
+    // Call with full supply piles
+    
+    // int gainCard(int supplyPos, struct gameState *state, int toFlag, int player)
+    // call all supplypos - each card
+    // test each toFlag (0,1,2) - discard, deck, hand
+    // test each player (0,1)
+    
+    // assert discard, deck, hand have increased in #
+    // assert card is where it needs to be
+    
+    // Call with empty supply piles
+    // Assert no change in discard, deck, hand
+    // Assert return value of -1
     memset(&G, 23, sizeof(struct gameState));   // clear the game state
     r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
      
     for (int player = 0; player < numPlayer; player++) {
-      for (int trashFlag = 0; trashFlag < 2; trashFlag++) { 
-	for (int handPos = 0; handPos < G.handCount[player]; handPos++)
+      for (int toFlag = 0; toFlag <= 2; toFlag++) { 
+	for (int supplyPos = adventurer; supplyPos <= treasure_map; supplyPos++)
 	  {
 	    // original counts
-	    //int origSupplyCount = G.supplyCount[supplyPos];
+	    int origSupplyCount = G.supplyCount[supplyPos];
 	    int origDiscardCount = G.discardCount[player];
 	    int origDeckCount = G.deckCount[player];
 	    int origHandCount = G.handCount[player];
-	    int origPlayedCount = G.playedCardCount;
 
-	    bool lastCardDiscarded; // Bool to track if the last card in hand was discarded
-	    int lastCard;
-	    
-	    if ( handPos == (G.handCount[player] - 1)
-		 || G.handCount[player] == 1 ) {
-	      lastCardDiscarded = false;
-	      lastCard = G.hand[player][ (G.handCount[player] - 1)];
-	    }
-	    else
-	      lastCardDiscarded = true;
-      
-	    // call discardCard
+	    // call gainCard
 #if (NOISY_TEST == 1)
-	    printf("Calling discardCard with supplyPos %d, toFlag %d, player %d\n", supplyPos, toFlag, player);
-#endif
-	    
-	    // int discardCard(int handPos, int currentPlayer, struct gameState *state, int trashFlag)
-	    int discardCardReturn = discardCard(handPos, player, &G, trashFlag);
+    printf("Calling gainCard with supplyPos %d, toFlag %d, player %d\n", supplyPos, toFlag, player);
+#endif	  
+	    int gainCardReturn = gainCard(supplyPos, &G, toFlag, player);
 
-	    // Tests for not trashed (add to Played pile)
-	    if (trashFlag < 1) {
-	      // assert playedCards pile has increased in #, pre/post state
-	     
-	      // assert discarded card is on top of playedCards pile
-	      assert(G.playedCards[origPlayedCount] == G.hand[player][handPos]);
-	      
-	      // assert # of playedCards has increased in #
-	      assert(G.playedCardCount == origPlayedCount + 1);
+	    // If there was no card in that supply pile to gain, assert -1 return and no changes in discard, deck, hand, or supply
+	    if (origSupplyCount < 1) {
+	      assert(gainCardReturn == -1);
+	      assert(G.discardCount[player] == origDiscardCount);
+	      assert(G.deckCount[player] == origDeckCount);
+	      assert(G.handCount[player] == origHandCount);
+	      assert(G.supplyCount[supplyPos] == origSupplyCount);
+	      printf("gainCard() test: PASS, function called on empty supply and no state change occurred for any card piles.\n");
 	    }
-	    
-	    // assert handCount[currentPlayer] has decreased by 1
-	    assert(G.handCount[player] == origHandCount - 1);
-	    
-	    // if card played is not last card in hand array or last card left in hand
-	    if (!lastCardDiscarded) {
-	      // assert discarded card has been replaced with previous last card in hand
-	      assert(G.hand[player][handPos] == lastCard);
-	      
-	      // assert last card has been set to -1
-	      assert(G.hand[player][G.handCount[player] - 1] == -1);
-	    }
-	    else
-	      // assert played handPos is set to -1
-	      assert(G.hand[player][handPos] == -1);
-
-	    // ASSERT RETURNSSSSSSSSSSSSSSSS
-	    assert(discardCardReturn == 0);
-
-	    /*    else {
+	    else {
 	      // assert the card gained is where it should be
 	      // assert discard, deck, or hand have increased in #
 	      if (toFlag == 0) { // Discard {
@@ -122,7 +116,6 @@ int main() {
 	      printf("gainCard() test: PASS, supply decreased and gainCard returned 0.\n");
 	    }
 	    
-	    }*/
 	  }
       }
     }

@@ -14,10 +14,10 @@
 #include <assert.h>
 #include "rngs.h"
 
-// set NOISY_TEST to 0 to remove printfs from output
-#define NOISY_TEST 0
+// int updateCoins(int player, struct gameState *state, int bonus)
 
-// something test suite ?!?!?! 
+// set NOISY_TEST to 0 to remove printfs from output
+#define NOISY_TEST 1
 
 int main() {
     int i;
@@ -25,71 +25,70 @@ int main() {
     int numPlayer = 2;
     int maxBonus = 10;
     int p, r, handCount;
+    int bonus;
     int k[10] = {adventurer, council_room, feast, gardens, mine
                , remodel, smithy, village, baron, great_hall};
     struct gameState G;
+    int maxHandCount = 5;
+    // arrays of all coppers, silvers, and golds
+    int coppers[MAX_HAND];
+    int silvers[MAX_HAND];
+    int golds[MAX_HAND];
 
-    printf ("TESTING buyCard():\n");
-         
-    for (int supplyPos = adventurer; supplyPos <= treasure_map; supplyPos++) {
-	for (int coinCount = 0; coinCount <= 12; coinCount++) {
-	  memset(&G, 23, sizeof(struct gameState));   // clear the game state
-	  r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
+    // array of no treasures
+    
+    for (i = 0; i < MAX_HAND; i++)
+    {
+        coppers[i] = copper;
+        silvers[i] = silver;
+        golds[i] = gold;
+    }
 
-	  //struct gameState pre;
-	  //memcpy (&pre, G, sizeof(struct gameState));
-	  
-	  int player = G.whoseTurn;
-	  int cardCost = getCost(supplyPos);
-
-	  G.coins = coinCount;
-	  
-	  // original counts
-	  int origSupplyCount = G.supplyCount[supplyPos];
-	  int origDiscardCount = G.discardCount[player];
-	  //printf("cardCost: %d, origCoins: %d\n", cardCost, coinCount);
-	  
-	  int origNumBuys = G.numBuys;
-	  
-	  //int origDeckCount = G.deckCount[player];
-	  //int origHandCount = G.handCount[player];
-	  
-	  // call buyCard
+    printf ("TESTING updateCoins():\n");
+    for (p = 0; p < numPlayer; p++)
+    {
+        for (handCount = 1; handCount <= maxHandCount; handCount++)
+        {
+            for (bonus = 0; bonus <= maxBonus; bonus++)
+            {
 #if (NOISY_TEST == 1)
-	  printf("Calling buyCard with supplyPos %d, toFlag %d, player %d\n", supplyPos, toFlag, player);
-#endif	  
-	  int buyCardReturn = buyCard(supplyPos, &G);
-	  
-	  // assert -1 return for fail conditions
-	  if (origNumBuys < 1 || origSupplyCount < 1 || coinCount < cardCost) {
-	    assert(buyCardReturn == -1);
-	    assert(G.discardCount[player] == origDiscardCount);
-	    assert(G.supplyCount[supplyPos] == origSupplyCount);
-	    printf("buyCard() test: PASS, function returned -1 as expected and no state change occurred.\n");
-	  }
-	  else {
-	    // assert phase set to 1
-	    assert(G.phase == 1);
-	    
-	    // assert card goes in discard?
-	    //printf("%d %d\n", G.discard[player][origDiscardCount], supplyPos);
-	    assert(G.discard[player][origDiscardCount] == supplyPos);
-	    assert(G.discardCount[player] == origDiscardCount + 1);
-	    printf("buyCard() test: PASS, card added to discard.\n");
-	    
-	    //printf("coins: %d, cardCost: %d, origCoins: %d\n", G.coins, cardCost, origCoins);
-	    // assert coins subtracted by cost
-	    assert(G.coins == (coinCount - cardCost));
-	    printf("buyCard() test: PASS, card cost subtracted from coins sucessfully.\n");
-	    
-	    // assert numBuys decreases
-	    assert(G.numBuys == (origNumBuys - 1));
-	    printf("buyCard() test: PASS, numBuys decreased by 1.\n");
-	  }	
-	}
-      }
-    
+                printf("Test player %d with %d treasure card(s) and %d bonus.\n", p, handCount, bonus);
+#endif
+                memset(&G, 23, sizeof(struct gameState));   // clear the game state
+                r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
+                G.handCount[p] = handCount;                 // set the number of cards on hand
+                memcpy(G.hand[p], coppers, sizeof(int) * handCount); // set all the cards to copper
+                updateCoins(p, &G, bonus);
+#if (NOISY_TEST == 1)
+                printf("G.coins = %d, expected = %d\n", G.coins, handCount * 1 + bonus);
+#endif
+                assert(G.coins == handCount * 1 + bonus); // check if the number of coins is correct
+
+                memcpy(G.hand[p], silvers, sizeof(int) * handCount); // set all the cards to silver
+                updateCoins(p, &G, bonus);
+#if (NOISY_TEST == 1)
+                printf("G.coins = %d, expected = %d\n", G.coins, handCount * 2 + bonus);
+#endif
+                assert(G.coins == handCount * 2 + bonus); // check if the number of coins is correct
+
+                memcpy(G.hand[p], golds, sizeof(int) * handCount); // set all the cards to gold
+                updateCoins(p, &G, bonus);
+#if (NOISY_TEST == 1)
+                printf("G.coins = %d, expected = %d\n", G.coins, handCount * 3 + bonus);
+#endif
+                assert(G.coins == handCount * 3 + bonus); // check if the number of coins is correct
+
+		memcpy(G.hand[p], notreasure, sizeof(int) * handCount); // set all the cards to not treasure
+                updateCoins(p, &G, bonus);
+#if (NOISY_TEST == 1)
+                printf("G.coins = %d, expected = %d\n", G.coins, 0);
+#endif
+                assert(G.coins == 0); // check if the number of coins is correct
+            }
+        }
+    }
+
     printf("All tests passed!\n");
-    
+
     return 0;
 }
