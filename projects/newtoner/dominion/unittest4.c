@@ -16,7 +16,7 @@
 #include "stdbool.h"
 
 // set NOISY_TEST to 0 to remove printfs from output
-#define NOISY_TEST 0
+#define NOISY_TEST 1
 
 // Discard card test
 // int discardCard(int handPos, int currentPlayer, struct gameState *state, int trashFlag)
@@ -33,35 +33,39 @@ int main() {
     struct gameState G;
 
     printf ("TESTING discardCard():\n");
-    
-    memset(&G, 23, sizeof(struct gameState));   // clear the game state
-    r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
      
     for (int player = 0; player < numPlayer; player++) {
-      for (int trashFlag = 0; trashFlag < 2; trashFlag++) { 
+      for (int trashFlag = 0; trashFlag < 2; trashFlag++) {
+	memset(&G, 23, sizeof(struct gameState));   // clear the game state
+	r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
+	int handPos = 0;
+	
+	//while (G.handCount[player] != 0)
 	for (int handPos = 0; handPos < G.handCount[player]; handPos++)
 	  {
+	    printf("HANDCOUNT: %d", G.handCount[player]);
 	    // original counts
+	    int origHandCount = G.handCount[player];
 	    //int origSupplyCount = G.supplyCount[supplyPos];
 	    int origDiscardCount = G.discardCount[player];
 	    int origDeckCount = G.deckCount[player];
-	    int origHandCount = G.handCount[player];
 	    int origPlayedCount = G.playedCardCount;
-
+	      
 	    bool lastCardDiscarded; // Bool to track if the last card in hand was discarded
 	    int lastCard;
 	    
-	    if ( handPos == (G.handCount[player] - 1)
+	    if ( (handPos == (G.handCount[player] - 1))
 		 || G.handCount[player] == 1 ) {
-	      lastCardDiscarded = false;
+	      lastCardDiscarded = true;
 	      lastCard = G.hand[player][ (G.handCount[player] - 1)];
 	    }
-	    else
-	      lastCardDiscarded = true;
-      
+	    else {
+	      lastCardDiscarded = false;
+	      lastCard = G.hand[player][handPos];
+	    }
 	    // call discardCard
 #if (NOISY_TEST == 1)
-	    printf("Calling discardCard with supplyPos %d, toFlag %d, player %d\n", supplyPos, toFlag, player);
+	    printf("Calling discardCard with handPos %d, player %d, trashFlag %d\n", handPos, player, trashFlag);
 #endif
 	    
 	    // int discardCard(int handPos, int currentPlayer, struct gameState *state, int trashFlag)
@@ -72,7 +76,7 @@ int main() {
 	      // assert playedCards pile has increased in #, pre/post state
 	     
 	      // assert discarded card is on top of playedCards pile
-	      assert(G.playedCards[origPlayedCount] == G.hand[player][handPos]);
+	      assert(G.playedCards[origPlayedCount] == lastCard);
 	      
 	      // assert # of playedCards has increased in #
 	      assert(G.playedCardCount == origPlayedCount + 1);
@@ -81,21 +85,21 @@ int main() {
 	    // assert handCount[currentPlayer] has decreased by 1
 	    assert(G.handCount[player] == origHandCount - 1);
 	    
-	    // if card played is not last card in hand array or last card left in hand
+	    // if card discarded is not last card in hand array or last card left in hand
 	    if (!lastCardDiscarded) {
 	      // assert discarded card has been replaced with previous last card in hand
 	      assert(G.hand[player][handPos] == lastCard);
 	      
 	      // assert last card has been set to -1
-	      assert(G.hand[player][G.handCount[player] - 1] == -1);
+	      assert(G.hand[player][G.handCount[player]] == -1);
 	    }
 	    else
 	      // assert played handPos is set to -1
 	      assert(G.hand[player][handPos] == -1);
 
-	    // ASSERT RETURNSSSSSSSSSSSSSSSS
+	    // assert successful function return
 	    assert(discardCardReturn == 0);
-
+	    
 	    /*    else {
 	      // assert the card gained is where it should be
 	      // assert discard, deck, or hand have increased in #
