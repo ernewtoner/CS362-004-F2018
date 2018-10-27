@@ -34,19 +34,24 @@ int main() {
   // copy the game state to a test case
   memcpy(&testG, &G, sizeof(struct gameState));
 
+  //int origDiscardCount = G.discardCount[thisPlayer];
+  int origPlayedCount = G.playedCardCount;
+  
   // set first card to Adventurer
   testG.hand[thisPlayer][0] = adventurer;
 
-  printf("Current player: %d\n", whoseTurn(&testG));
-
-  printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
+  printf("Current hand (5 cards): %d %d %d %d %d\n", testG.hand[thisPlayer][ testG.handCount[thisPlayer]-5],
+	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-4],
+  	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-3],
+	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2],
+  	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1]);
+  
+  //printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
   // Call the Adventurer card effect on test state
   int cardEffectReturn = cardEffect(adventurer, choice1, choice2, choice3, &testG, handPos, &bonus);
-  printf("handCount after call: %d\n", testG.handCount[thisPlayer]);
+  //printf("handCount after call: %d\n", testG.handCount[thisPlayer]);
 
-  // Cards in hand remain the same + 2 Treasure Cards
-  
-  // Player should now have 2 more cards in their hand and have discarded the Adventurer card
+  // Confirm two cards were drawn
   int newCards = 2;
   int discarded = 1;
   printf("hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
@@ -57,22 +62,51 @@ int main() {
     printf("adventurer cardEffect() test: FAIL, hand count does not match expected value.\n");
   }
 
-  // Confirm discarded card is Adventurer
+  // Confirm a card was played and that played card was Adventurer
+  if(assertTrue(testG.playedCardCount == origPlayedCount + 1)) {
+    printf("adventurer cardEffect() test: PASS, a card was added to played cards.\n");
 
-  // Player should have 2 more actions than before Adventurer was played
-  /* int newActions = 2;
-  printf("action count = %d, expected = %d\n", testG.numActions, G.numActions + newActions);
-  if (assertTrue(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + newCards - discarded))
-    printf("adventurer cardEffect() test: PASS, player has gained two actions.\n");
+    if(assertTrue(testG.playedCards[testG.playedCardCount - 1] == adventurer))
+      printf("adventurer cardEffect() test: PASS, card played was adventurer.\n");
+    else {
+      printf("adventurer cardEffect() test: FAIL, card played was not adventurer.\n");
+      allTestsPassed = false;
+    }
+  }
   else {
     allTestsPassed = false;
-    printf("adventurer cardEffect() test: FAIL, action count does not match expected value.\n");
-    }*/
+    printf("adventurer cardEffect() test: FAIL, a card was not added to played cards.\n");    
+  }
+   
+  //printf("Top 2 cards: %d %d", testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1],
+  //	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2]);
 
-  // Drawn cards should both be treasures
-  // printf("Top 2 cards: %d, %d," testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1]);
-// int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
+  printf("Current hand (7 cards): %d %d %d %d %d %d %d\n", testG.hand[thisPlayer][ testG.handCount[thisPlayer]-7],
+	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-6],
+	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-5],
+	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-4],
+  	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-3],
+	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2],
+  	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1]);
   
+  // Confirm the drawn cards were treasure cards
+  int cardDrawn1 = testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2];
+  int cardDrawn2 = testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1];
+ 
+  if(assertTrue(cardDrawn1 == copper || cardDrawn1 == silver || cardDrawn1 == gold))
+    printf("adventurer cardEffect() test: PASS, first drawn card is a treasure card.\n");
+  else {
+    allTestsPassed = false;
+    printf("adventurer cardEffect() test: FAIL, first drawn card is not a treasure card.\n");
+    }
+
+  if(assertTrue(cardDrawn2 == copper || cardDrawn2 == silver || cardDrawn2 == gold))
+    printf("adventurer cardEffect() test: PASS, second drawn card is a treasure card.\n");
+  else {
+    allTestsPassed = false;
+    printf("adventurer cardEffect() test: FAIL, second drawn card is not a treasure card.\n");
+    }
+    
   // Check if the cardEffect() function returned 0
   if (assertTrue(cardEffectReturn == 0))
     printf("adventurer cardEffect() test: PASS, cardEffect() returned 0.\n");
@@ -83,7 +117,7 @@ int main() {
 
   // If all tests passed or otherwise print a statement accordingly
   if(allTestsPassed)
-    printf("All tests passed!\n");
+    printf("adventurer cardEffect(): All tests passed!\n");
   else
-    printf("All tests complete with failure(s)!\n");
+    printf("adventurer cardEffect(): All tests complete with failure(s)!\n");
 }

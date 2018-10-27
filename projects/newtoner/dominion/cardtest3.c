@@ -1,4 +1,3 @@
-// void smithyCardEffect(int currentPlayer, struct gameState *state, int handPos)
 // int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
 
 #include "dominion.h"
@@ -38,10 +37,10 @@ int main() {
   // copy the game state to a test case
   memcpy(&testG, &G, sizeof(struct gameState));
 
-  // set first card to Smithy
+  int origPlayedCount = G.playedCardCount;
+  
+  // set first card to Village
   testG.hand[thisPlayer][0] = village;
-
-  printf("Current player: %d\n", whoseTurn(&testG));
 
   //printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
   // Call the Village card effect on test state
@@ -53,13 +52,27 @@ int main() {
   int discarded = 1;
   printf("hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
   if (assertTrue(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + newCards - discarded))
-    printf("village cardEffect() test: PASS, player has gained one card and discarded one card.\n");
+    printf("village cardEffect() test: PASS, player has gained one card minus the expected played Village.\n");
   else {
     allTestsPassed = false;
     printf("village cardEffect() test: FAIL, hand count does not match expected value.\n");
   }
+  
+  // Confirm a card was played and that played card was Village
+  if(assertTrue(testG.playedCardCount == origPlayedCount + 1)) {
+    printf("village cardEffect() test: PASS, a card was added to played cards.\n");
 
-  // Confirm discarded card is Village
+    if(assertTrue(testG.playedCards[testG.playedCardCount - 1] == village))
+      printf("village cardEffect() test: PASS, card played was village.\n");
+    else {
+      printf("village cardEffect() test: FAIL, card played was not village.\n");
+      allTestsPassed = false;
+    }
+  }
+  else {
+    allTestsPassed = false;
+    printf("village cardEffect() test: FAIL, a card was not added to played cards.\n");    
+  }
 
   // Player should have 2 more actions than before Village was played
   int newActions = 2;
