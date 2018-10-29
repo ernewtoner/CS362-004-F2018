@@ -10,12 +10,19 @@
 // set NOISY_TEST to 0 to remove printfs from output
 #define NOISY_TEST 1
 
+int assertTrue(int condition) {
+  if (condition > 0)
+    return 1;
+  else
+    return 0;
+}
+
 int main() {
     int i;
     int seed = 1000;
     int numPlayer = 2;
     int maxBonus = 10;
-    int p, r, handCount;
+    int p, handCount;
     int bonus;
     int k[10] = {adventurer, council_room, feast, gardens, mine
                , remodel, smithy, village, baron, great_hall};
@@ -27,12 +34,14 @@ int main() {
     int golds[MAX_HAND];
 
     // array of no treasures
+    int notreasure[MAX_HAND];
     
     for (i = 0; i < MAX_HAND; i++)
     {
         coppers[i] = copper;
         silvers[i] = silver;
         golds[i] = gold;
+	notreasure[i] = curse;
     }
 
     printf ("TESTING updateCoins():\n");
@@ -46,7 +55,8 @@ int main() {
                 printf("Test player %d with %d treasure card(s) and %d bonus.\n", p, handCount, bonus);
 #endif
                 memset(&G, 23, sizeof(struct gameState));   // clear the game state
-                r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
+                int r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
+		assert(r == 0);
                 G.handCount[p] = handCount;                 // set the number of cards on hand
                 memcpy(G.hand[p], coppers, sizeof(int) * handCount); // set all the cards to copper
                 updateCoins(p, &G, bonus);
@@ -69,12 +79,13 @@ int main() {
 #endif
                 assert(G.coins == handCount * 3 + bonus); // check if the number of coins is correct
 
-		memcpy(G.hand[p], notreasure, sizeof(int) * handCount); // set all the cards to not treasure
+		memcpy(G.hand[p], notreasure, sizeof(int) * handCount); // set all the cards to curses
                 updateCoins(p, &G, bonus);
 #if (NOISY_TEST == 1)
-                printf("G.coins = %d, expected = %d\n", G.coins, 0);
+                printf("G.coins = %d, expected = %d\n", G.coins, 0 + bonus);
 #endif
-                assert(G.coins == 0); // check if the number of coins is correct
+                assert(G.coins == 0 + bonus); // check if the number of coins is correct
+		
             }
         }
     }

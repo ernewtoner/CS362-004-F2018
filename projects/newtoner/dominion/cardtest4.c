@@ -92,6 +92,28 @@ int main() {
     printf("great_hall cardEffect() test: FAIL, score (VP count) does not match expected value.\n");
   }
 
+  // Confirm no state change for kingdom/victory card piles
+  bool supplyChange = false;
+  
+  for (int supplyPos = adventurer; supplyPos <= treasure_map; supplyPos++) {
+    if (testG.supplyCount[supplyPos] == G.supplyCount[supplyPos])
+      continue;
+    else {
+      supplyChange = true;
+    
+      printf("supply count of %d = %d, expected = %d\n", supplyPos, testG.supplyCount[thisPlayer], G.supplyCount[thisPlayer]);
+      break;
+    }
+  }
+
+  // If there was a change in supply, test is a failure
+  if (supplyChange) {
+    allTestsPassed = false;
+    printf("great_hall cardEffect() test: FAIL, supply count has unexpectedly changed.\n");
+  }
+  else
+    printf("great_hall cardEffect() test: PASS, supply count of all cards has remained the same.\n");
+
   // Check if the cardEffect() function returned 0
   if (assertTrue(cardEffectReturn == 0))
     printf("great_hall cardEffect() test: PASS, cardEffect() returned 0.\n");
@@ -102,7 +124,7 @@ int main() {
 
   // If all tests passed or otherwise print a statement accordingly
   if(allTestsPassed)
-    printf("All tests passed!\n");
+    printf("Great Hall card test: all tests passed!\n");
   else
-    printf("All tests complete with failure(s)!\n");
+    printf("Great Hall card test: All tests complete with failure(s)!\n");
 }

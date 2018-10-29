@@ -35,7 +35,10 @@ int main() {
   // copy the game state to a test case
   memcpy(&testG, &G, sizeof(struct gameState));
 
+  // original counts
   int origPlayedCount = G.playedCardCount;
+  int origDeckCount = G.deckCount[thisPlayer];
+  int origHandCount = G.handCount[thisPlayer];
 
   // set first card to Smithy
   testG.hand[thisPlayer][0] = smithy;
@@ -49,12 +52,21 @@ int main() {
   // These tests performs as expected, bugs in Smithy make it not discard Smithy and causes drawing 4 cards
   int newCards = 3;
   int discarded = 1;
-  printf("hand count = %d, expected = %d\n", testG.handCount[thisPlayer], G.handCount[thisPlayer] + newCards - discarded);
-  if (assertTrue(testG.handCount[thisPlayer] == G.handCount[thisPlayer] + newCards - discarded))
+  printf("hand count = %d, expected = %d\n", testG.handCount[thisPlayer], origHandCount + newCards - discarded);
+  if (assertTrue(testG.handCount[thisPlayer] == origHandCount + newCards - discarded))
     printf("smithy cardEffect() test: PASS, player's hand has gained three cards minus the expected played Smithy.\n");
   else {
     allTestsPassed = false;
     printf("smithy cardEffect() test: FAIL, hand count does not match expected value.\n");
+  }
+
+  // Confirm the three cards came from the player's deck
+  printf("deck count = %d, expected = %d\n", testG.deckCount[thisPlayer], origDeckCount - newCards);
+  if (assertTrue(testG.deckCount[thisPlayer] == origDeckCount - newCards))
+    printf("smithy cardEffect() test: PASS, player's deck count reduced by 3 cards.\n");
+  else {
+    allTestsPassed = false;
+    printf("smithy cardEffect() test: FAIL, player's deck count does not match expected value.\n");
   }
 
   // Confirm a card was played and that played card was Smithy
@@ -73,6 +85,30 @@ int main() {
     printf("smithy cardEffect() test: FAIL, a card was not added to played cards.\n");    
   }
 
+  // Confirm no state change for kingdom/victory card piles
+  bool supplyChange = false;
+  
+  for (int supplyPos = adventurer; supplyPos <= treasure_map; supplyPos++) {
+    if (testG.supplyCount[supplyPos] == G.supplyCount[supplyPos])
+      continue;
+    else {
+      supplyChange = true;
+    
+      printf("supply count of %d = %d, expected = %d\n", supplyPos, testG.supplyCount[thisPlayer], G.supplyCount[thisPlayer]);
+      break;
+    }
+  }
+
+  // If there was a change in supply, test is a failure
+  if (supplyChange) {
+    allTestsPassed = false;
+    printf("smithy cardEffect() test: FAIL, supply count has unexpectedly changed.\n");
+  }
+  else
+    printf("smithy cardEffect() test: PASS, supply count of all cards has remained the same.\n");
+
+  // Confirm no state change for other player's
+  
   // Check if the cardEffect() function returned 0
   if (assertTrue(cardEffectReturn == 0))
     printf("smithy cardEffect() test: PASS, cardEffect() returned 0.\n");

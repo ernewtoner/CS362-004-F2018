@@ -42,7 +42,7 @@ int main() {
   // set first card to Village
   testG.hand[thisPlayer][0] = village;
 
-  //printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
+   //printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
   // Call the Village card effect on test state
   int cardEffectReturn = cardEffect(village, choice1, choice2, choice3, &testG, handPos, &bonus);
   // printf("handCount after call: %d\n", testG.handCount[thisPlayer]);
@@ -83,6 +83,29 @@ int main() {
     allTestsPassed = false;
     printf("village cardEffect() test: FAIL, action count does not match expected value.\n");
   }
+
+  // Confirm no state change for kingdom/victory card piles
+  bool supplyChange = false;
+  
+  for (int supplyPos = adventurer; supplyPos <= treasure_map; supplyPos++) {
+    if (testG.supplyCount[supplyPos] == G.supplyCount[supplyPos])
+      continue;
+    else {
+      supplyChange = true;
+    
+      printf("supply count of %d = %d, expected = %d\n", supplyPos, testG.supplyCount[thisPlayer], G.supplyCount[thisPlayer]);
+      break;
+    }
+  }
+
+  // If there was a change in supply, test is a failure
+  if (supplyChange) {
+    allTestsPassed = false;
+    printf("village cardEffect() test: FAIL, supply count has unexpectedly changed.\n");
+  }
+  else
+    printf("village cardEffect() test: PASS, supply count of all cards has remained the same.\n");
+
 
   // Check if the cardEffect() function returned 0
   if (assertTrue(cardEffectReturn == 0))

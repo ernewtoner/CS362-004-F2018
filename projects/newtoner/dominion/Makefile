@@ -51,7 +51,7 @@ unittestresults: unittest1.o unittest2.o unittest3.o unittest4.o cardtest1.o car
 	./cardtest2 >> unittestresults.out
 	./cardtest3 >> unittestresults.out
 	./cardtest4 >> unittestresults.out
-	gcov dominion.c >> unittestresults.out
+	gcov -b -f dominion.c >> unittestresults.out
 	cat dominion.c.gcov >> unittestresults.out
 
 testUpdateCoins: testUpdateCoins.c dominion.o rngs.o

@@ -106,7 +106,29 @@ int main() {
     allTestsPassed = false;
     printf("adventurer cardEffect() test: FAIL, second drawn card is not a treasure card.\n");
     }
+
+  // Confirm no state change for kingdom/victory card piles
+  bool supplyChange = false;
+  
+  for (int supplyPos = adventurer; supplyPos <= treasure_map; supplyPos++) {
+    if (testG.supplyCount[supplyPos] == G.supplyCount[supplyPos])
+      continue;
+    else {
+      supplyChange = true;
     
+      printf("supply count of %d = %d, expected = %d\n", supplyPos, testG.supplyCount[thisPlayer], G.supplyCount[thisPlayer]);
+      break;
+    }
+  }
+
+  // If there was a change in supply, test is a failure
+  if (supplyChange) {
+    allTestsPassed = false;
+    printf("adventurer cardEffect() test: FAIL, supply count has unexpectedly changed.\n");
+  }
+  else
+    printf("adventurer cardEffect() test: PASS, supply count of all cards has remained the same.\n");
+  
   // Check if the cardEffect() function returned 0
   if (assertTrue(cardEffectReturn == 0))
     printf("adventurer cardEffect() test: PASS, cardEffect() returned 0.\n");

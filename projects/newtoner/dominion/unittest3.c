@@ -11,12 +11,16 @@
 // buyCard test suite
 // int buyCard(int supplyPos, struct gameState *state)
 
+int assertTrue(int condition) {
+  if (condition > 0)
+    return 1;
+  else
+    return 0;
+}
+
 int main() {
-    int i;
     int seed = 1000;
     int numPlayer = 2;
-    int maxBonus = 10;
-    int p, r, handCount;
     int k[10] = {adventurer, council_room, feast, gardens, mine
                , remodel, smithy, village, baron, great_hall};
     struct gameState G;
@@ -26,7 +30,8 @@ int main() {
     for (int supplyPos = adventurer; supplyPos <= treasure_map; supplyPos++) {
 	for (int coinCount = 0; coinCount <= 12; coinCount++) {
 	  memset(&G, 23, sizeof(struct gameState));   // clear the game state
-	  r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
+	  int r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
+	  assertTrue(r == 0);
 
 	  //struct gameState pre;
 	  //memcpy (&pre, G, sizeof(struct gameState));
@@ -54,28 +59,28 @@ int main() {
 	  
 	  // assert -1 return for fail conditions
 	  if (origNumBuys < 1 || origSupplyCount < 1 || coinCount < cardCost) {
-	    assert(buyCardReturn == -1);
-	    assert(G.discardCount[player] == origDiscardCount);
-	    assert(G.supplyCount[supplyPos] == origSupplyCount);
+	    assertTrue(buyCardReturn == -1);
+	    assertTrue(G.discardCount[player] == origDiscardCount);
+	    assertTrue(G.supplyCount[supplyPos] == origSupplyCount);
 	    printf("buyCard() test: PASS, function returned -1 as expected and no state change occurred.\n");
 	  }
 	  else {
 	    // assert phase set to 1
-	    assert(G.phase == 1);
+	    assertTrue(G.phase == 1);
 	    
 	    // assert card goes in discard?
 	    //printf("%d %d\n", G.discard[player][origDiscardCount], supplyPos);
-	    assert(G.discard[player][origDiscardCount] == supplyPos);
-	    assert(G.discardCount[player] == origDiscardCount + 1);
+	    assertTrue(G.discard[player][origDiscardCount] == supplyPos);
+	    assertTrue(G.discardCount[player] == origDiscardCount + 1);
 	    printf("buyCard() test: PASS, card added to discard.\n");
 	    
 	    //printf("coins: %d, cardCost: %d, origCoins: %d\n", G.coins, cardCost, origCoins);
 	    // assert coins subtracted by cost
-	    assert(G.coins == (coinCount - cardCost));
+	    assertTrue(G.coins == (coinCount - cardCost));
 	    printf("buyCard() test: PASS, card cost subtracted from coins sucessfully.\n");
 	    
 	    // assert numBuys decreases
-	    assert(G.numBuys == (origNumBuys - 1));
+	    assertTrue(G.numBuys == (origNumBuys - 1));
 	    printf("buyCard() test: PASS, numBuys decreased by 1.\n");
 	  }	
 	}
