@@ -657,7 +657,7 @@ void smithyCardEffect(int currentPlayer, struct gameState *state, int handPos)
 
 void adventurerCardEffect(int drawntreasure, struct gameState *state, int currentPlayer, int temphand[])
 {
-  int cardDrawn, z;
+  int cardDrawn, z = 0; // Bug removed
   
   while(drawntreasure<2){
     if (state->deckCount[currentPlayer] <1){//if the deck is empty we need to shuffle discard and add to deck
