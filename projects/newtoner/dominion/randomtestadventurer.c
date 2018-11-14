@@ -15,6 +15,59 @@ int assertTrue(int condition) {
     return 0;
 }
 
+////////////////////////////////////////////////////////
+/// Initialize Random Game
+/// Deck/hand/discard are randomized for one player
+////////////////////////////////////////////////////////
+void initializeRandomGame(int p, struct gameState *G) {
+    G->whoseTurn = p;
+  
+    // Randomize deck, discard, and hand counts
+    int randomDiscardCount = floor(Random() * MAX_DECK);
+    int randomDeckCount = floor(Random() * MAX_DECK);
+    int randomHandCount = floor(Random() * randomDeckCount);
+
+    G->handCount[p] = 0; // Initialize to 0 since we'll draw the cards from the deck
+    
+    G->deckCount[p] = randomDeckCount;
+    G->discardCount[p] = randomDiscardCount;
+
+    /*printf("handcount: %d, randomvar %d\n", G->handCount[p], randomHandCount);
+    printf("deckcount: %d, randomvar %d\n", G->deckCount[p], randomDeckCount);
+    printf("discardcount: %d, randomvar %d\n", G->discardCount[p], randomDiscardCount);*/
+    
+    // Randomize actual cards in player's deck
+    for (int j = 0; j < randomDeckCount; j++)
+      G->deck[p][j] = (Random() * 27); // 0 - 26 for adventurer to treasure_map
+   
+    // Randomize actual cards in player's discard pile
+    for (int j = 0; j < randomDiscardCount; j++)
+      G->discard[p][j] = (Random() * 27); // 0 - 26 for adventurer to treasure_map
+    
+    // Draw up to the randomized hand count
+    for (int it = 0; it < randomHandCount; it++){
+      drawCard(p, G);
+    }
+
+    /* printf("handcount: %d, randomvar %d\n", G->handCount[p], randomHandCount);
+    printf("deckcount: %d, randomvar %d\n", G->deckCount[p], randomDeckCount);
+    printf("discardcount: %d, randomvar %d\n", G->discardCount[p], randomDiscardCount);*/
+   
+    //initialize first player's turn
+    G->outpostPlayed = 0;
+    G->phase = 0;
+    G->numActions = 1;
+    G->numBuys = 1;
+    G->playedCardCount = 0;
+  
+    // Update coins for the new hand
+    updateCoins(p, G, 0);
+
+    printf("deckCount: %d\n", G->deckCount[p]);
+    printf("discardCount: %d\n", G->discardCount[p]);
+    printf("handCount: %d\n", G->handCount[p]);
+}
+
 void testCardEffectAdventurer(int thisPlayer, struct gameState* G)
 {
   printf("----------------- Testing Card: Adventurer ----------------\n");
@@ -145,59 +198,21 @@ void testCardEffectAdventurer(int thisPlayer, struct gameState* G)
 
 int main() {
   int numPlayers = 2;
-  int seed = 1000;
   struct gameState G;
-  int k[10] = {adventurer, embargo, village, minion, mine, cutpurse,
-			sea_hag, tribute, smithy, council_room};
   
-  // initialize a game state and player cards
-
   printf ("RANDOM TESTS.\n");
 
   SelectStream(2);
   PutSeed(3);
 
   for (int n = 0; n < 2000; n++) {   
-    //for (int i = 0; i < sizeof(struct gameState); i++) {
-      //((char*)&G)[i] = floor(Random() * 256);
-     //}
-    //initializeGame(numPlayers, k, seed, &G);
-    
     // Randomize player #
-    int p = floor(Random() * 2);
-    G.whoseTurn = p;
+    int p = floor(Random() * numPlayers);
 
-    // Randomize deck, discard, and hand counts
-    int randomDiscardCount = floor(Random() * MAX_DECK);
-    int randomHandCount = floor(Random() * MAX_HAND);
-    int randomDeckCount = floor(Random() * MAX_DECK);
-    
-    // Randomize actual cards in player's deck
-    for (int j = 0; j < randomDeckCount; j++)
-      G.deck[p][j] = (Random() * 27); // 0 - 26 for adventurer to treasure_map
-    
-    G.deckCount[p] = randomDeckCount;
+    // Randomize player's deck/hand/discard
+    initializeRandomGame(p, &G);
 
-    // Randomize actual cards in player's discard pile
-    for (int j = 0; j < randomDiscardCount; j++)
-      G.discard[p][j] = (Random() * 27); // 0 - 26 for adventurer to treasure_map
-
-    G.discardCount[p] = randomDiscardCount;
-
-    // Draw up to the randomized hand count minus the 5 cards drawn already by initializeGame and deck size
-    for (int it = 0; it < randomHandCount; it++){
-      drawCard(p, &G);
-    }
-
-    G.handCount[p] = randomHandCount;
-
-    // Update coins for the new hand
-    updateCoins(p, &G, 0);
-
-    printf("deckCount: %d\n", G.deckCount[p]);
-    printf("discardCount: %d\n", G.discardCount[p]);
-    printf("handCount: %d\n", G.handCount[p]);
-     
+    // Test card on given player
     testCardEffectAdventurer(p, &G);
   }
 }

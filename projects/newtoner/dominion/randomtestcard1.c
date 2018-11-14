@@ -18,25 +18,26 @@ int assertTrue(int condition) {
     return 0;
 }
 
-//////////////////////////////////////////////
-/// Initialize random game
-//////////////////////////////////////////////
-void initializeRandomGame(int numPlayers, int p, int kingdomCards[10], int randomSeed,
-		   struct gameState *G) {
+////////////////////////////////////////////////////////
+/// Initialize Random Game
+/// Deck/hand/discard are randomized for one player
+////////////////////////////////////////////////////////
+void initializeRandomGame(int p, struct gameState *G) {
+    G->whoseTurn = p;
+  
     // Randomize deck, discard, and hand counts
     int randomDiscardCount = floor(Random() * MAX_DECK);
     int randomDeckCount = floor(Random() * MAX_DECK);
     int randomHandCount = floor(Random() * randomDeckCount);
 
-    // Initialize hand count to 0 since we'll draw the cards from the deck
-    G->handCount[p] = 0;
-
+    G->handCount[p] = 0; // Initialize to 0 since we'll draw the cards from the deck
+    
     G->deckCount[p] = randomDeckCount;
     G->discardCount[p] = randomDiscardCount;
 
-    printf("handcount: %d, randomvar %d\n", G->handCount[p], randomHandCount);
+    /*printf("handcount: %d, randomvar %d\n", G->handCount[p], randomHandCount);
     printf("deckcount: %d, randomvar %d\n", G->deckCount[p], randomDeckCount);
-    printf("discardcount: %d, randomvar %d\n", G->discardCount[p], randomDiscardCount);
+    printf("discardcount: %d, randomvar %d\n", G->discardCount[p], randomDiscardCount);*/
     
     // Randomize actual cards in player's deck
     for (int j = 0; j < randomDeckCount; j++)
@@ -46,14 +47,14 @@ void initializeRandomGame(int numPlayers, int p, int kingdomCards[10], int rando
     for (int j = 0; j < randomDiscardCount; j++)
       G->discard[p][j] = (Random() * 27); // 0 - 26 for adventurer to treasure_map
     
-    // Draw up to the randomized hand count minus deck size?
+    // Draw up to the randomized hand count
     for (int it = 0; it < randomHandCount; it++){
       drawCard(p, G);
     }
 
-    printf("handcount: %d, randomvar %d\n", G->handCount[p], randomHandCount);
+    /* printf("handcount: %d, randomvar %d\n", G->handCount[p], randomHandCount);
     printf("deckcount: %d, randomvar %d\n", G->deckCount[p], randomDeckCount);
-    printf("discardcount: %d, randomvar %d\n", G->discardCount[p], randomDiscardCount);
+    printf("discardcount: %d, randomvar %d\n", G->discardCount[p], randomDiscardCount);*/
    
     //initialize first player's turn
     G->outpostPlayed = 0;
@@ -68,7 +69,6 @@ void initializeRandomGame(int numPlayers, int p, int kingdomCards[10], int rando
     printf("deckCount: %d\n", G->deckCount[p]);
     printf("discardCount: %d\n", G->discardCount[p]);
     printf("handCount: %d\n", G->handCount[p]);
-    //////// End Random Initialize
 }
 
 void testCardEffectSmithy(int thisPlayer, struct gameState* G) {
@@ -77,7 +77,7 @@ void testCardEffectSmithy(int thisPlayer, struct gameState* G) {
  int handPos = 0, choice1 = 0, choice2 = 0, choice3 = 0, bonus = 0;
  struct gameState testG;
  bool allTestsPassed = false;
- 
+
   // copy the game state to a test case
   memcpy(&testG, G, sizeof(struct gameState));
 
@@ -110,7 +110,7 @@ void testCardEffectSmithy(int thisPlayer, struct gameState* G) {
   // In case shuffling discard into deck has occurred
   int expectedDeckCount = origDeckCount - newCards;
   if (expectedDeckCount < 0) {
-    printf("TRIGGERED!\n");
+    //printf("TRIGGERED!\n");
     expectedDeckCount = origDiscardCount - abs(expectedDeckCount);
   }
   
@@ -180,10 +180,7 @@ void testCardEffectSmithy(int thisPlayer, struct gameState* G) {
 
 int main() {
   int numPlayers = 2;
-  int seed = 1000;
   struct gameState G;
-  int k[10] = {adventurer, embargo, village, minion, mine, cutpurse,
-			sea_hag, tribute, smithy, council_room};
 
   printf ("RANDOM TESTS.\n");
 
@@ -191,11 +188,9 @@ int main() {
   PutSeed(3);
 
   for (int n = 0; n < 2000; n++) {
-
     // Randomize player #
-    int p = floor(Random() * 2);
-    G.whoseTurn = p;
-    
+    int p = floor(Random() * numPlayers);
+
     //for (int i = 0; i < sizeof(struct gameState); i++) {
     //  ((char*)&G)[i] = floor(Random() * 256);
     //}
@@ -208,9 +203,11 @@ int main() {
     printf("discardCount: %d\n", G.discardCount[p]);
     G.handCount[p] = floor(Random() * MAX_HAND);
     printf("handCount: %d\n", G.handCount[p]);*/
-    
-    initializeRandomGame(numPlayers, p, k, seed, &G);
-    
+
+    // Randomize player's deck/hand/discard
+    initializeRandomGame(p, &G);
+
+    // Test card on given player
     testCardEffectSmithy(p, &G);
   }
 }
