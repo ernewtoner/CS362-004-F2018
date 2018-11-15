@@ -63,6 +63,7 @@ void initializeRandomGame(int p, struct gameState *G) {
     // Update coins for the new hand
     updateCoins(p, G, 0);
 
+    printf("\n---- Random game state initialized ----\n");
     printf("deckCount: %d\n", G->deckCount[p]);
     printf("discardCount: %d\n", G->discardCount[p]);
     printf("handCount: %d\n", G->handCount[p]);
@@ -80,27 +81,22 @@ void testCardEffectAdventurer(int thisPlayer, struct gameState* G)
   
   // copy the game state to a test case
   memcpy(&testG, G, sizeof(struct gameState));
-
-  //int test = testG.handCount[thisPlayer];
-  //printf("test: %d\n", test);
   
   //int origDiscardCount = G.discardCount[thisPlayer];
   int origPlayedCount = G->playedCardCount;
   
   // set first card to Adventurer
   testG.hand[thisPlayer][0] = adventurer;
-  
-  /*  printf("Current hand (5 cards): %d %d %d %d %d\n", testG.hand[thisPlayer][ testG.handCount[thisPlayer]-5],
-      testG.hand[thisPlayer][ testG.handCount[thisPlayer]-4],
-      testG.hand[thisPlayer][ testG.handCount[thisPlayer]-3],
-      testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2],
-      testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1]);*/
+
+  // If our hand is empty, increment handCount by 1 effectively adding Adventurer to the hand
+  if (testG.handCount[thisPlayer] == 0) {
+    G->handCount[thisPlayer]++;
+    testG.handCount[thisPlayer]++;
+  }
   
   //printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
   // Call the Adventurer card effect on test state
   int cardEffectReturn = cardEffect(adventurer, choice1, choice2, choice3, &testG, handPos, &bonus);
-  //cardEffectReturn = cardEffect(adventurer, choice1, choice2, choice3, &testG, handPos, &bonus);
-  //cardEffectReturn = cardEffect(adventurer, choice1, choice2, choice3, &testG, handPos, &bonus);
   //printf("handCount after call: %d\n", testG.handCount[thisPlayer]);
   
   // Confirm two cards were drawn
@@ -129,17 +125,6 @@ void testCardEffectAdventurer(int thisPlayer, struct gameState* G)
     allTestsPassed = false;
     printf("adventurer cardEffect() test: FAIL, a card was not added to played cards.\n");    
   }
-   
-  //printf("Top 2 cards: %d %d", testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1],
-  //	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2]);
-
-  /*  printf("Current hand (7 cards): %d %d %d %d %d %d %d\n", testG.hand[thisPlayer][ testG.handCount[thisPlayer]-7],
-	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-6],
-	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-5],
-	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-4],
-  	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-3],
-	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2],
-  	 testG.hand[thisPlayer][ testG.handCount[thisPlayer]-1]);*/
   
   // Confirm the drawn cards were treasure cards
   int cardDrawn1 = testG.hand[thisPlayer][ testG.handCount[thisPlayer]-2];

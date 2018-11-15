@@ -66,6 +66,7 @@ void initializeRandomGame(int p, struct gameState *G) {
     // Update coins for the new hand
     updateCoins(p, G, 0);
 
+    printf("\n---- Random game state initialized ----\n");
     printf("deckCount: %d\n", G->deckCount[p]);
     printf("discardCount: %d\n", G->discardCount[p]);
     printf("handCount: %d\n", G->handCount[p]);
@@ -90,6 +91,13 @@ void testCardEffectSmithy(int thisPlayer, struct gameState* G) {
   // set first card to Smithy
   testG.hand[thisPlayer][0] = smithy;
 
+   // If our hand is empty, increment handCount by 1 effectively adding Smityh to the hand
+  if (testG.handCount[thisPlayer] == 0) {
+    G->handCount[thisPlayer]++;
+    origHandCount++;
+    testG.handCount[thisPlayer]++;
+  }
+ 
   //printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
   // Call the Smithy card effect on test state
   int cardEffectReturn = cardEffect(smithy, choice1, choice2, choice3, &testG, handPos, &bonus);

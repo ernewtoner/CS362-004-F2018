@@ -63,6 +63,7 @@ void initializeRandomGame(int p, struct gameState *G) {
     // Update coins for the new hand
     updateCoins(p, G, 0);
 
+    printf("\n---- Random game state initialized ----\n");
     printf("deckCount: %d\n", G->deckCount[p]);
     printf("discardCount: %d\n", G->discardCount[p]);
     printf("handCount: %d\n", G->handCount[p]);
@@ -86,6 +87,11 @@ void testCardEffectVillage(int thisPlayer, struct gameState* G) {
   // set first card to Village
   testG.hand[thisPlayer][0] = village;
 
+  // If our hand is empty, increment handCount by 1
+  if (testG.handCount[thisPlayer] == 0) {
+    G->handCount[thisPlayer]++;
+    testG.handCount[thisPlayer]++;
+  }
    //printf("handCount before call: %d\n", testG.handCount[thisPlayer]);
   // Call the Village card effect on test state
   int cardEffectReturn = cardEffect(village, choice1, choice2, choice3, &testG, handPos, &bonus);
@@ -110,6 +116,7 @@ void testCardEffectVillage(int thisPlayer, struct gameState* G) {
       printf("village cardEffect() test: PASS, card played was village.\n");
     else {
       printf("village cardEffect() test: FAIL, card played was not village.\n");
+      printf("CARD: %d", testG.playedCards[testG.playedCardCount - 1]);
       allTestsPassed = false;
     }
   }
